@@ -6,7 +6,6 @@ from src.schemas import UserModel
 
 
 async def get_user_by_email(email: str, db: Session) -> User:
-    return db.query(User).filter(User.email == email).first()
     """
     Retrieves a single contact with the specified email for a specific user.
 
@@ -17,11 +16,9 @@ async def get_user_by_email(email: str, db: Session) -> User:
     :return: The contact with the specified email, or None if it does not exist.
     :rtype: Contacts | None
     """
+    return db.query(User).filter(User.email == email).first()
 
 async def confirmed_email(email: str, db: Session) -> None:
-    user = await get_user_by_email(email, db)
-    user.confirmed = True
-    db.commit()
     """
     Commit a response for the validation request.
 
@@ -31,12 +28,12 @@ async def confirmed_email(email: str, db: Session) -> None:
     :type db: Session
     :return: Commit confirmed field for user 
     """
+    user = await get_user_by_email(email, db)
+    user.confirmed = True
+    db.commit()
+
 
 async def update_avatar(email, url: str, db: Session) -> User:
-    user = await get_user_by_email(email, db)
-    user.avatar = url
-    db.commit()
-    return user
     """
     Retrieves a single contact with the specified email for a specific user.
 
@@ -49,8 +46,22 @@ async def update_avatar(email, url: str, db: Session) -> User:
     :return: The user with the specified email and url, or None if it does not exist
     :rtype: Users | None
     """
+    user = await get_user_by_email(email, db)
+    user.avatar = url
+    db.commit()
+    return user
 
 async def create_user(body: UserModel, db: Session) -> User:
+    """
+    Creates a new note for a specific user.
+
+    :param body: The data for the user to create.
+    :type body: UsersModel
+    :param db: The database session.
+    :type db: Session
+    :return: The newly created user.
+    :rtype: Users
+    """
     avatar = None
     try:
         g = Gravatar(body.email)
@@ -62,20 +73,9 @@ async def create_user(body: UserModel, db: Session) -> User:
     db.commit()
     db.refresh(new_user)
     return new_user
-    """
-    Creates a new note for a specific user.
 
-    :param body: The data for the user to create.
-    :type body: UsersModel
-    :param db: The database session.
-    :type db: Session
-    :return: The newly created user.
-    :rtype: Users
-    """
 
 async def update_token(user: User, token: str | None, db: Session) -> None:
-    user.refresh_token = token
-    db.commit()
     """
     Updates token for a specific user.
 
@@ -86,3 +86,5 @@ async def update_token(user: User, token: str | None, db: Session) -> None:
     :param db: The database session.
     :type db: Session
     """
+    user.refresh_token = token
+    db.commit()
