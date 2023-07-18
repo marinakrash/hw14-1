@@ -8,7 +8,6 @@ from src.schemas import ContactsModel, ContactsResponse
 
 
 async def get_contacts(skip: int, limit: int, user: User, db: Session) -> List[Contacts]:
-    return db.query(Contacts).filter(Contacts.user_id == user.id).offset(skip).limit(limit).all()
     """
     Retrieves a list of contacts for a specific user with specified pagination parameters.
 
@@ -23,9 +22,10 @@ async def get_contacts(skip: int, limit: int, user: User, db: Session) -> List[C
     :return: A list of contacts.
     :rtype: List[Contacts]
     """
+    return db.query(Contacts).filter(Contacts.user_id == user.id).offset(skip).limit(limit).all()
+
 
 async def get_contact(contact_id: int, user: User, db: Session) -> Contacts:
-    return db.query(Contacts).filter(and_(Contacts.id == contact_id, Contacts.user_id == user.id)).first()
     """
     Retrieves a single contact with the specified ID for a specific user.
 
@@ -38,13 +38,10 @@ async def get_contact(contact_id: int, user: User, db: Session) -> Contacts:
     :return: The note with the specified ID, or None if it does not exist.
     :rtype: Contacts | None
     """
+    return db.query(Contacts).filter(and_(Contacts.id == contact_id, Contacts.user_id == user.id)).first()
+
 
 async def create_contact(body: ContactsModel, user: User, db: Session) -> Contacts:
-    contact = Contacts(name=body.name, user_id=user.id)
-    db.add(contact)
-    db.commit()
-    db.refresh(contact)
-    return contact
     """
     Creates a new note for a specific user.
 
@@ -57,13 +54,14 @@ async def create_contact(body: ContactsModel, user: User, db: Session) -> Contac
     :return: The newly created contact.
     :rtype: Contacts
     """
+    contact = Contacts(name=body.name, user_id=user.id)
+    db.add(contact)
+    db.commit()
+    db.refresh(contact)
+    return contact
+
 
 async def update_contact(contact_id: int, body: ContactsModel, user: User, db: Session) -> Contacts | None:
-    contact = db.query(Contacts).filter(and_(Contacts.id == contact_id, Contacts.user_id == user.id)).first()
-    if contact:
-        contact.name = body.name
-        db.commit()
-    return contact
     """
     Updates a single contact with the specified ID for a specific user.
 
@@ -78,13 +76,14 @@ async def update_contact(contact_id: int, body: ContactsModel, user: User, db: S
     :return: The updated contact, or None if it does not exist.
     :rtype: Contacts | None
     """
-
-async def remove_contact(contact_id: int, user: User, db: Session) -> Contacts | None:
     contact = db.query(Contacts).filter(and_(Contacts.id == contact_id, Contacts.user_id == user.id)).first()
     if contact:
-        db.delete(contact)
+        contact.name = body.name
         db.commit()
     return contact
+
+
+async def remove_contact(contact_id: int, user: User, db: Session) -> Contacts | None:
     """
     Removes a single contact with the specified ID for a specific user.
 
@@ -97,3 +96,8 @@ async def remove_contact(contact_id: int, user: User, db: Session) -> Contacts |
     :return: The removed note, or None if it does not exist.
     :rtype: Contacts | None
     """
+    contact = db.query(Contacts).filter(and_(Contacts.id == contact_id, Contacts.user_id == user.id)).first()
+    if contact:
+        db.delete(contact)
+        db.commit()
+    return contact
